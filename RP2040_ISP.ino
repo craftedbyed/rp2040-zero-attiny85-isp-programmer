@@ -7,7 +7,7 @@
       -- SPI on GP2...4, RESET on GP5
       -- RGB LED status indication using NeoPixel
 * WS2812 status LED on GP16: READY = Blue, PROGRAMMING = Yellow, SUCCESS = GREEN, ERROR = Rred
-* Code modified and refined by Edmond Francis on Mar 22, 2026
+* Code modified and refined by Edmond Francis for Waveshare's RP2040 Zero on Mar 22, 2026
 
 *************************************************************************************************/
 
@@ -30,7 +30,7 @@
 
 Adafruit_NeoPixel pixel(1, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// --- Minimal BitBanged SPI ---
+// Minimal BitBanged SPI
 class BitBangedSPI {
 public:
   void begin() {
@@ -64,7 +64,7 @@ private:
 
 static BitBangedSPI SPI;
 
-// --- global state (small) ---
+// global state (small)
 int ISPError = 0;
 int pmode = 0;
 unsigned int here;
@@ -85,7 +85,7 @@ uint8_t hbval = 128;
 int8_t hbdelta = 8;
 unsigned long success_until = 0; // transient success green
 
-// --- LED helpers ---
+// LED helpers
 // set LED raw
 static inline void setLED(uint8_t r, uint8_t g, uint8_t b) {
   pixel.setPixelColor(0, pixel.Color(r, g, b));
@@ -108,22 +108,22 @@ void heartbeat() {
 void update_led() {
   heartbeat();
   if (ISPError) {
-    // ---- LED STATUS: Error ----
+    // LED STATUS: Error
     setLED(hbval, 0, 0); // pulsing red
     return;
   }
   if (millis() < success_until) {
-    // ---- LED STATUS: Programming Success ----
+    // LED STATUS: Programming Success
     setLED(0, hbval, 0); // pulsing green (transient)
     return;
   }
   if (pmode) {
-    // ---- LED STATUS: Uploading / Programming ----
+    // LED STATUS: Uploading / Programming
     // yellow (red + green) pulsing
     setLED(hbval, hbval / 2, 0);
     return;
   }
-  // ---- LED STATUS: Power / Ready ----
+  // LED STATUS: Power / Ready
   setLED(0, 0, hbval); // pulsing blue
 }
 
@@ -132,7 +132,7 @@ void indicate_success(unsigned int ms = 700) {
   success_until = millis() + ms;
 }
 
-// --- small helpers for serial/spi/protocol ---
+// Small helpers for serial/spi/protocol
 #define beget16(addr) ((*addr) * 256 + *((addr) + 1))
 #define SPI_CLOCK (100000UL / 6)
 
@@ -195,7 +195,7 @@ void reset_target(bool rst) {
   digitalWrite(RESET_PIN, ((rst && rst_active_high) || (!rst && !rst_active_high)) ? HIGH : LOW);
 }
 
-// --- Core ISP operations ---
+// Core ISP operations
 void start_pmode() {
   pinMode(RESET_PIN, OUTPUT);   // Set OUTPUT first
   reset_target(true);           // Assert RESET
